@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow Fetch | Coded By AuxGrep</title>
+    <style>
+        :root {
+            --ninja-dark: #111111;
+            --ninja-gray: #222222;
+            --ninja-light: #333333;
+            --ninja-accent: #4CAF50;
+            --ninja-text: #e0e0e0;
+            --ninja-danger: #f44336;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        body {
+            background-color: var(--ninja-dark);
+            color: var(--ninja-text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid var(--ninja-light);
+            border-radius: 0;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: var(--ninja-gray);
+            border-bottom: 2px solid var(--ninja-accent);
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+            color: var(--ninja-accent);
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .search-section {
+            margin-bottom: 25px;
+            background-color: var(--ninja-gray);
+            padding: 20px;
+            border: 1px solid var(--ninja-light);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            background-color: var(--ninja-dark);
+            border: 1px solid var(--ninja-light);
+            color: var(--ninja-text);
+            font-size: 0.9rem;
+            border-radius: 0;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--ninja-accent);
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: var(--ninja-light);
+            color: var(--ninja-text);
+            border: none;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background-color: var(--ninja-accent);
+            color: black;
+        }
+
+        button:disabled {
+            background-color: var(--ninja-gray);
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            background-color: var(--ninja-gray);
+            border: 1px solid var(--ninja-light);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: var(--ninja-light);
+            border-bottom: 1px solid var(--ninja-light);
+        }
+
+        .results-count {
+            font-weight: bold;
+            color: var(--ninja-accent);
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .results-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--ninja-light);
+            transition: background-color 0.2s;
+        }
+
+        .result-item:hover {
+            background-color: var(--ninja-light);
+        }
+
+        .result-url {
+            word-break: break-all;
+            margin-bottom: 5px;
+            color: var(--ninja-accent);
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background-color: var(--ninja-light);
+        }
+
+        .page-btn {
+            padding: 8px 15px;
+            background-color: var(--ninja-gray);
+            color: var(--ninja-text);
+            border: none;
+            cursor: pointer;
+        }
+
+        .page-btn.active {
+            background-color: var(--ninja-accent);
+            color: black;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--ninja-gray);
+            padding: 30px;
+            border: 1px solid var(--ninja-accent);
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .shuriken {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: spin 1.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tag {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.7rem;
+            color: #444;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .export-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SHADOW FETCH</h1>
+            <p class="subtitle">Author: AuxGrep</p>
+        </header>
+
+        <section class="search-section">
+            <div class="input-group">
+                <input type="text" id="domain-input" placeholder="Enter target domain..." autocomplete="off" autocorrect="off" spellcheck="false">
+                <button id="search-btn">Execute</button>
+            </div>
+        </section>
+
+        <section class="results-section" id="results-section">
+            <div class="results-header">
+                <div class="results-count" id="results-count">0 results</div>
+                <div class="export-buttons">
+                    <button id="copy-btn">Copy</button>
+                    <button id="export-json-btn">Export JSON</button>
+                    <button id="export-csv-btn">Export CSV</button>
+                </div>
+            </div>
+
+            <div class="results-container" id="results-container">
+                <!-- Results will be inserted here -->
+            </div>
+
+            <div class="pagination" id="pagination" style="display: none;">
+                <button class="page-btn" id="prev-page">Previous</button>
+                <span id="page-info">Page 1</span>
+                <button class="page-btn" id="next-page">Next</button>
+            </div>
+        </section>
+
+        <div class="empty-state" id="empty-state">
+            <div>⛧</div>
+            <p>Enter target domain to begin extraction</p>
+            <p>Example: target.com</p>
+        </div>
+    </div>
+
+    <!-- Waiting Modal -->
+    <div class="modal" id="waiting-modal">
+        <div class="modal-content">
+            <div class="shuriken">✧</div>
+            <h3>OPERATION IN PROGRESS</h3>
+            <p>Gathering intelligence from the shadows...</p>
+        </div>
+    </div>
+
+    <div class="tag">coded by AuxGrep</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const domainInput = document.getElementById('domain-input');
+            const searchBtn = document.getElementById('search-btn');
+            const resultsSection = document.getElementById('results-section');
+            const resultsContainer = document.getElementById('results-container');
+            const resultsCount = document.getElementById('results-count');
+            const copyBtn = document.getElementById('copy-btn');
+            const exportJsonBtn = document.getElementById('export-json-btn');
+            const exportCsvBtn = document.getElementById('export-csv-btn');
+            const pagination = document.getElementById('pagination');
+            const prevPageBtn = document.getElementById('prev-page');
+            const nextPageBtn = document.getElementById('next-page');
+            const pageInfo = document.getElementById('page-info');
+            const emptyState = document.getElementById('empty-state');
+            const waitingModal = document.getElementById('waiting-modal');
+
+            // State
+            let currentDomain = '';
+            let currentPage = 1;
+            let totalPages = 1;
+            let currentResults = [];
+
+            // Event Listeners
+            searchBtn.addEventListener('click', fetchUrls);
+            domainInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    fetchUrls();
+                }
+            });
+            
+            copyBtn.addEventListener('click', copyResults);
+            exportJsonBtn.addEventListener('click', exportJson);
+            exportCsvBtn.addEventListener('click', exportCsv);
+            prevPageBtn.addEventListener('click', goToPrevPage);
+            nextPageBtn.addEventListener('click', goToNextPage);
+
+            // Functions
+            async function fetchUrls() {
+                const domain = domainInput.value.trim();
+                
+                if (!domain) {
+                    showEmptyState();
+                    return;
+                }
+
+                currentDomain = domain;
+                currentPage = 1;
+                
+                try {
+                    showWaitingModal();
+                    const urls = await getUrlsFromOtx(domain, currentPage);
+                    hideWaitingModal();
+                    
+                    if (urls.length === 0) {
+                        showEmptyState();
+                        return;
+                    }
+                    
+                    currentResults = urls;
+                    renderResults(urls);
+                    updatePagination();
+                    resultsSection.style.display = 'block';
+                    emptyState.style.display = 'none';
+                } catch (error) {
+                    console.error('Extraction failed:', error);
+                    hideWaitingModal();
+                    showEmptyState();
+                }
+            }
+
+            function showWaitingModal() {
+                waitingModal.style.display = 'flex';
+                searchBtn.disabled = true;
+            }
+
+            function hideWaitingModal() {
+                waitingModal.style.display = 'none';
+                searchBtn.disabled = false;
+            }
+
+            async function getUrlsFromOtx(domain, page = 1) {
+                const apiUrl = `https://otx.alienvault.com/api/v1/indicators/domain/${domain}/url_list?limit=300&page=${page}`;
+                
+                try {
+                    const response = await fetch(apiUrl);
+                    
+                    if (!response.ok) {
+                        throw new Error(`API request failed with status ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    return data.url_list.map(item => ({
+                        url: item.url,
+                        date: item.date || 'Unknown',
+                    }));
+                } catch (error) {
+                    throw new Error(`Failed to fetch from OTX: ${error.message}`);
+                }
+            }
+
+            function renderResults(urls) {
+                resultsContainer.innerHTML = '';
+                
+                if (urls.length === 0) {
+                    resultsContainer.innerHTML = '<div class="empty-state">No URLs found</div>';
+                    return;
+                }
+                
+                urls.forEach((item, index) => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    
+                    resultItem.innerHTML = `
+                        <div class="result-url">${item.url}</div>
+                        <div class="result-meta">
+                            <span>#${index + 1}</span>
+                            <span>Detected: ${formatDate(item.date)}</span>
+                        </div>
+                    `;
+                    
+                    resultsContainer.appendChild(resultItem);
+                });
+                
+                resultsCount.textContent = `${urls.length} target${urls.length !== 1 ? 's' : ''} acquired`;
+            }
+
+            function formatDate(dateString) {
+                if (!dateString || dateString === 'Unknown') return 'Unknown';
+                
+                try {
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString();
+                } catch {
+                    return dateString;
+                }
+            }
+
+            function showEmptyState() {
+                resultsSection.style.display = 'none';
+                emptyState.style.display = 'block';
+                pagination.style.display = 'none';
+            }
+
+            function updatePagination() {
+                if (totalPages > 1) {
+                    pagination.style.display = 'flex';
+                    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+                    
+                    prevPageBtn.disabled = currentPage === 1;
+                    nextPageBtn.disabled = currentPage === totalPages;
+                } else {
+                    pagination.style.display = 'none';
+                }
+            }
+
+            async function goToPrevPage() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    await loadPage(currentPage);
+                }
+            }
+
+            async function goToNextPage() {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    await loadPage(currentPage);
+                }
+            }
+
+            async function loadPage(page) {
+                try {
+                    showWaitingModal();
+                    const urls = await getUrlsFromOtx(currentDomain, page);
+                    hideWaitingModal();
+                    currentResults = urls;
+                    renderResults(urls);
+                    updatePagination();
+                } catch (error) {
+                    console.error('Error loading page:', error);
+                    hideWaitingModal();
+                }
+            }
+
+            function copyResults() {
+                const urls = currentResults.map(item => item.url).join('\n');
+                
+                navigator.clipboard.writeText(urls)
+                    .then(() => {
+                        // Silent operation - no feedback
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy:', err);
+                    });
+            }
+
+            function exportJson() {
+                const data = {
+                    domain: currentDomain,
+                    timestamp: new Date().toISOString(),
+                    urls: currentResults
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                downloadBlob(blob, `shadowfetch-${currentDomain}.json`);
+            }
+
+            function exportCsv() {
+                let csv = 'URL,Date\n';
+                currentResults.forEach(item => {
+                    csv += `"${item.url}","${item.date}"\n`;
+                });
+                
+                const blob = new Blob([csv], { type: 'text/csv' });
+                downloadBlob(blob, `shadowfetch-${currentDomain}.csv`);
+            }
+
+            function downloadBlob(blob, filename) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>
