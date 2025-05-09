@@ -4,21 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shadow Fetch | Coded By AuxGrep</title>
+    <meta name="description" content="Advanced OSINT tool for extracting URLs from AlienVault OTX">
+    <meta name="author" content="AuxGrep">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --ninja-dark: #111111;
-            --ninja-gray: #222222;
-            --ninja-light: #333333;
+            --ninja-dark: #0a0a0a;
+            --ninja-gray: #1a1a1a;
+            --ninja-light: #2a2a2a;
             --ninja-accent: #4CAF50;
+            --ninja-accent-dark: #3e8e41;
             --ninja-text: #e0e0e0;
+            --ninja-text-dim: #b0b0b0;
             --ninja-danger: #f44336;
+            --ninja-warning: #ff9800;
+            --ninja-info: #2196F3;
+            --glass-effect: rgba(10, 10, 10, 0.85);
+            --border-radius: 4px;
+            --transition-speed: 0.25s;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Courier New', monospace;
+            font-family: 'JetBrains Mono', monospace;
         }
 
         body {
@@ -26,15 +38,39 @@
             color: var(--ninja-text);
             line-height: 1.6;
             padding: 20px;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(76, 175, 80, 0.1) 0%, transparent 50%);
+            min-height: 100vh;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             border: 1px solid var(--ninja-light);
-            border-radius: 0;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            border-radius: var(--border-radius);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+            background: var(--glass-effect);
+            backdrop-filter: blur(8px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--ninja-accent), transparent);
+            animation: scanline 3s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         header {
@@ -42,26 +78,54 @@
             margin-bottom: 30px;
             padding: 20px;
             background-color: var(--ninja-gray);
+            border-radius: var(--border-radius);
+            position: relative;
+            overflow: hidden;
             border-bottom: 2px solid var(--ninja-accent);
         }
 
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--ninja-accent), transparent);
+        }
+
         h1 {
-            font-size: 2rem;
+            font-size: 2.5rem;
             margin-bottom: 5px;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
             color: var(--ninja-accent);
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+            font-weight: 700;
+            position: relative;
         }
 
         .subtitle {
             font-size: 0.9rem;
-            opacity: 0.7;
+            opacity: 0.8;
+            color: var(--ninja-text-dim);
+            margin-bottom: 10px;
+        }
+
+        .version {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.7rem;
+            color: var(--ninja-text-dim);
         }
 
         .search-section {
             margin-bottom: 25px;
             background-color: var(--ninja-gray);
             padding: 20px;
+            border-radius: var(--border-radius);
             border: 1px solid var(--ninja-light);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
         .input-group {
@@ -71,56 +135,113 @@
 
         input[type="text"] {
             flex: 1;
-            padding: 12px 15px;
+            padding: 14px 20px;
             background-color: var(--ninja-dark);
             border: 1px solid var(--ninja-light);
             color: var(--ninja-text);
-            font-size: 0.9rem;
-            border-radius: 0;
+            font-size: 1rem;
+            border-radius: var(--border-radius);
+            transition: all var(--transition-speed);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         input[type="text"]:focus {
             outline: none;
             border-color: var(--ninja-accent);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
         }
 
         button {
-            padding: 12px 20px;
+            padding: 14px 24px;
             background-color: var(--ninja-light);
             color: var(--ninja-text);
             border: none;
-            border-radius: 0;
+            border-radius: var(--border-radius);
             cursor: pointer;
             font-size: 0.9rem;
             font-weight: bold;
-            transition: all 0.3s;
+            transition: all var(--transition-speed);
             text-transform: uppercase;
             letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: all 0.5s;
+        }
+
+        button:hover::after {
+            left: 100%;
         }
 
         button:hover {
             background-color: var(--ninja-accent);
             color: black;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
         }
 
         button:disabled {
             background-color: var(--ninja-gray);
             color: #666;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        button.primary {
+            background-color: var(--ninja-accent);
+            color: black;
+        }
+
+        button.primary:hover {
+            background-color: var(--ninja-accent-dark);
+        }
+
+        button.danger {
+            background-color: var(--ninja-danger);
+            color: white;
+        }
+
+        button.warning {
+            background-color: var(--ninja-warning);
+            color: black;
+        }
+
+        button.info {
+            background-color: var(--ninja-info);
+            color: white;
         }
 
         .results-section {
             background-color: var(--ninja-gray);
             border: 1px solid var(--ninja-light);
+            border-radius: var(--border-radius);
             margin-bottom: 20px;
             display: none;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
         .results-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
+            padding: 15px 20px;
             background-color: var(--ninja-light);
             border-bottom: 1px solid var(--ninja-light);
         }
@@ -128,6 +249,7 @@
         .results-count {
             font-weight: bold;
             color: var(--ninja-accent);
+            font-size: 0.9rem;
         }
 
         .export-buttons {
@@ -138,61 +260,128 @@
         .results-container {
             max-height: 500px;
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--ninja-accent) var(--ninja-dark);
+        }
+
+        .results-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .results-container::-webkit-scrollbar-track {
+            background: var(--ninja-dark);
+        }
+
+        .results-container::-webkit-scrollbar-thumb {
+            background-color: var(--ninja-accent);
+            border-radius: 4px;
         }
 
         .result-item {
-            padding: 15px;
+            padding: 15px 20px;
             border-bottom: 1px solid var(--ninja-light);
-            transition: background-color 0.2s;
+            transition: all var(--transition-speed);
+            position: relative;
         }
 
         .result-item:hover {
             background-color: var(--ninja-light);
         }
 
+        .result-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background-color: var(--ninja-accent);
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+        }
+
+        .result-item:hover::before {
+            opacity: 1;
+        }
+
         .result-url {
             word-break: break-all;
             margin-bottom: 5px;
             color: var(--ninja-accent);
+            font-weight: 500;
         }
 
         .result-meta {
             display: flex;
             gap: 15px;
             font-size: 0.8rem;
-            color: #999;
+            color: var(--ninja-text-dim);
         }
 
         .empty-state {
             text-align: center;
             padding: 40px 20px;
-            color: #666;
+            color: var(--ninja-text-dim);
+            background-color: var(--ninja-gray);
+            border-radius: var(--border-radius);
+            border: 1px dashed var(--ninja-light);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+            100% { opacity: 0.3; transform: scale(1); }
         }
 
         .pagination {
             display: flex;
             justify-content: center;
+            align-items: center;
             gap: 10px;
             padding: 15px;
             background-color: var(--ninja-light);
+            border-top: 1px solid var(--ninja-light);
         }
 
         .page-btn {
             padding: 8px 15px;
+            min-width: 40px;
             background-color: var(--ninja-gray);
             color: var(--ninja-text);
             border: none;
+            border-radius: var(--border-radius);
             cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .page-btn:hover {
+            background-color: var(--ninja-accent);
+            color: black;
         }
 
         .page-btn.active {
             background-color: var(--ninja-accent);
             color: black;
+            font-weight: bold;
         }
 
         .page-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            background-color: var(--ninja-gray);
+            color: var(--ninja-text);
+        }
+
+        .page-info {
+            margin: 0 15px;
+            font-size: 0.9rem;
         }
 
         /* Modal styles */
@@ -203,24 +392,36 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.9);
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(5px);
         }
 
         .modal-content {
             background-color: var(--ninja-gray);
             padding: 30px;
             border: 1px solid var(--ninja-accent);
-            max-width: 400px;
+            border-radius: var(--border-radius);
+            max-width: 500px;
+            width: 90%;
             text-align: center;
+            box-shadow: 0 0 30px rgba(76, 175, 80, 0.3);
+            position: relative;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .shuriken {
             font-size: 3rem;
             margin-bottom: 20px;
             animation: spin 1.5s linear infinite;
+            color: var(--ninja-accent);
         }
 
         @keyframes spin {
@@ -228,15 +429,250 @@
             100% { transform: rotate(360deg); }
         }
 
+        .modal h3 {
+            margin-bottom: 15px;
+            color: var(--ninja-accent);
+        }
+
+        .modal p {
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--ninja-text-dim);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .modal-close:hover {
+            color: var(--ninja-text);
+        }
+
+        .progress-bar {
+            height: 4px;
+            background-color: var(--ninja-dark);
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: var(--ninja-accent);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
         .tag {
             position: fixed;
             bottom: 10px;
             right: 10px;
             font-size: 0.7rem;
-            color: #444;
+            color: var(--ninja-text-dim);
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .tag:hover {
+            opacity: 1;
+        }
+
+        .settings-btn {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: var(--ninja-light);
+            border: none;
+            color: var(--ninja-text);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: all var(--transition-speed);
+            z-index: 100;
+        }
+
+        .settings-btn:hover {
+            background: var(--ninja-accent);
+            color: black;
+            transform: rotate(90deg);
+        }
+
+        .settings-panel {
+            position: fixed;
+            bottom: 60px;
+            left: 10px;
+            background: var(--ninja-gray);
+            border: 1px solid var(--ninja-light);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            width: 250px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all var(--transition-speed);
+            z-index: 99;
+        }
+
+        .settings-panel.active {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .settings-panel h4 {
+            margin-bottom: 10px;
+            color: var(--ninja-accent);
+            border-bottom: 1px solid var(--ninja-light);
+            padding-bottom: 5px;
+        }
+
+        .setting-item {
+            margin-bottom: 10px;
+        }
+
+        .setting-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+        }
+
+        .setting-item select, 
+        .setting-item input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            background-color: var(--ninja-dark);
+            border: 1px solid var(--ninja-light);
+            color: var(--ninja-text);
+            border-radius: var(--border-radius);
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--ninja-light);
+            color: var(--ninja-text);
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all var(--transition-speed);
+            z-index: 1000;
+            max-width: 300px;
+            border-left: 4px solid var(--ninja-accent);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-left-color: var(--ninja-accent);
+        }
+
+        .notification.error {
+            border-left-color: var(--ninja-danger);
+        }
+
+        .notification.warning {
+            border-left-color: var(--ninja-warning);
+        }
+
+        .notification.info {
+            border-left-color: var(--ninja-info);
+        }
+
+        .notification-close {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: none;
+            border: none;
+            color: var(--ninja-text-dim);
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .notification-close:hover {
+            color: var(--ninja-text);
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .result-action-btn {
+            padding: 3px 8px;
+            font-size: 0.7rem;
+            background-color: var(--ninja-dark);
+            border: 1px solid var(--ninja-light);
+            color: var(--ninja-text-dim);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .result-action-btn:hover {
+            background-color: var(--ninja-light);
+            color: var(--ninja-text);
+        }
+
+        .filter-section {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: var(--ninja-dark);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--ninja-light);
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .filter-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-input {
+            flex: 1;
+            padding: 10px;
+            background-color: var(--ninja-gray);
+            border: 1px solid var(--ninja-light);
+            color: var(--ninja-text);
+            border-radius: var(--border-radius);
+        }
+
+        .filter-btn {
+            padding: 10px 15px;
         }
 
         @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
             .input-group {
                 flex-direction: column;
             }
@@ -248,21 +684,119 @@
             .export-buttons {
                 flex-direction: column;
                 width: 100%;
+                gap: 5px;
             }
+
+            .results-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .settings-panel {
+                width: calc(100% - 20px);
+                left: 10px;
+                right: 10px;
+            }
+
+            .filter-row {
+                flex-direction: column;
+            }
+        }
+
+        /* Terminal effect for empty state */
+        .terminal {
+            background-color: var(--ninja-dark);
+            border: 1px solid var(--ninja-light);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--ninja-accent);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terminal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                rgba(10, 10, 10, 0.8) 50%, 
+                rgba(10, 10, 10, 0.2) 50%
+            );
+            background-size: 100% 4px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .terminal-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .command-line {
+            display: flex;
+            margin-bottom: 5px;
+        }
+
+        .prompt {
+            color: var(--ninja-accent);
+            margin-right: 10px;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 15px;
+            background-color: var(--ninja-accent);
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .response {
+            color: var(--ninja-text);
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
+            <div class="version">v2.3.1</div>
             <h1>SHADOW FETCH</h1>
+            <p class="subtitle">Advanced OSINT URL Extraction Tool</p>
             <p class="subtitle">Author: AuxGrep</p>
         </header>
 
         <section class="search-section">
             <div class="input-group">
-                <input type="text" id="domain-input" placeholder="Enter target domain..." autocomplete="off" autocorrect="off" spellcheck="false">
-                <button id="search-btn">Execute</button>
+                <input type="text" id="domain-input" placeholder="Enter target domain (e.g., example.com)..." autocomplete="off" autocorrect="off" spellcheck="false">
+                <button id="search-btn" class="primary">Execute</button>
+            </div>
+        </section>
+
+        <section class="filter-section" id="filter-section" style="display: none;">
+            <div class="filter-row">
+                <input type="text" id="filter-input" class="filter-input" placeholder="Filter URLs (supports regex)">
+                <button id="filter-btn" class="info">Filter</button>
+                <button id="reset-filter-btn" class="warning">Reset</button>
+            </div>
+            <div class="filter-row">
+                <select id="sort-select" class="filter-input">
+                    <option value="date-desc">Sort by: Newest first</option>
+                    <option value="date-asc">Sort by: Oldest first</option>
+                    <option value="url-asc">Sort by: URL A-Z</option>
+                    <option value="url-desc">Sort by: URL Z-A</option>
+                </select>
+                <button id="sort-btn" class="info">Apply</button>
             </div>
         </section>
 
@@ -270,9 +804,18 @@
             <div class="results-header">
                 <div class="results-count" id="results-count">0 results</div>
                 <div class="export-buttons">
-                    <button id="copy-btn">Copy</button>
-                    <button id="export-json-btn">Export JSON</button>
-                    <button id="export-csv-btn">Export CSV</button>
+                    <button id="copy-btn" class="info" title="Copy all URLs to clipboard">
+                        <span class="icon">⎘</span> Copy
+                    </button>
+                    <button id="export-json-btn" class="info" title="Export as JSON">
+                        <span class="icon">⏷</span> JSON
+                    </button>
+                    <button id="export-csv-btn" class="info" title="Export as CSV">
+                        <span class="icon">⏷</span> CSV
+                    </button>
+                    <button id="export-txt-btn" class="info" title="Export as TXT">
+                        <span class="icon">⏷</span> TXT
+                    </button>
                 </div>
             </div>
 
@@ -281,29 +824,82 @@
             </div>
 
             <div class="pagination" id="pagination" style="display: none;">
-                <button class="page-btn" id="prev-page">Previous</button>
-                <span id="page-info">Page 1</span>
-                <button class="page-btn" id="next-page">Next</button>
+                <button class="page-btn" id="first-page" title="First page">«</button>
+                <button class="page-btn" id="prev-page" title="Previous page">‹</button>
+                <div class="page-info" id="page-info">Page 1 of 1</div>
+                <button class="page-btn" id="next-page" title="Next page">›</button>
+                <button class="page-btn" id="last-page" title="Last page">»</button>
             </div>
         </section>
 
         <div class="empty-state" id="empty-state">
-            <div>⛧</div>
-            <p>Enter target domain to begin extraction</p>
-            <p>Example: target.com</p>
+            <div class="terminal">
+                <div class="terminal-content">
+                    <div class="command-line">
+                        <span class="prompt">></span>
+                        <span class="command">shadow_fetch --init</span>
+                        <span class="cursor"></span>
+                    </div>
+                    <div class="response">Shadow Fetch v2.3.1 initialized</div>
+                    <div class="command-line">
+                        <span class="prompt">></span>
+                        <span class="command">shadow_fetch --target [domain]</span>
+                        <span class="cursor"></span>
+                    </div>
+                    <div class="response">Enter target domain to begin extraction</div>
+                    <div class="response">Example: example.com</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Waiting Modal -->
     <div class="modal" id="waiting-modal">
         <div class="modal-content">
+            <button class="modal-close" id="cancel-fetch">×</button>
             <div class="shuriken">✧</div>
             <h3>OPERATION IN PROGRESS</h3>
-            <p>Gathering intelligence from the shadows...</p>
+            <p id="status-message">Establishing connection to C&C!! Wait!!...</p>
+            <div class="progress-bar">
+                <div class="progress" id="progress-bar"></div>
+            </div>
         </div>
     </div>
 
-    <div class="tag">coded by AuxGrep</div>
+    <!-- Settings Panel -->
+    <button class="settings-btn" id="settings-btn">⚙</button>
+    <div class="settings-panel" id="settings-panel">
+        <h4>Tool Settings</h4>
+        <div class="setting-item">
+            <label for="results-per-page">Results per page:</label>
+            <input type="number" id="results-per-page" min="10" max="500" value="100">
+        </div>
+        <div class="setting-item">
+            <label for="theme-select">Theme:</label>
+            <select id="theme-select">
+                <option value="default">Default (Green)</option>
+                <option value="red">Red</option>
+                <option value="blue">Blue</option>
+                <option value="purple">Purple</option>
+            </select>
+        </div>
+        <div class="setting-item">
+            <label for="auto-copy">Auto-copy on fetch:</label>
+            <select id="auto-copy">
+                <option value="false">Disabled</option>
+                <option value="true">Enabled</option>
+            </select>
+        </div>
+        <button id="save-settings-btn" class="primary">Save Settings</button>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <button class="notification-close" id="notification-close">×</button>
+        <div id="notification-message">Operation completed successfully</div>
+    </div>
+
+    <div class="tag" id="tag">coded by AuxGrep</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -316,18 +912,52 @@
             const copyBtn = document.getElementById('copy-btn');
             const exportJsonBtn = document.getElementById('export-json-btn');
             const exportCsvBtn = document.getElementById('export-csv-btn');
+            const exportTxtBtn = document.getElementById('export-txt-btn');
             const pagination = document.getElementById('pagination');
+            const firstPageBtn = document.getElementById('first-page');
             const prevPageBtn = document.getElementById('prev-page');
             const nextPageBtn = document.getElementById('next-page');
+            const lastPageBtn = document.getElementById('last-page');
             const pageInfo = document.getElementById('page-info');
             const emptyState = document.getElementById('empty-state');
             const waitingModal = document.getElementById('waiting-modal');
+            const cancelFetchBtn = document.getElementById('cancel-fetch');
+            const progressBar = document.getElementById('progress-bar');
+            const statusMessage = document.getElementById('status-message');
+            const settingsBtn = document.getElementById('settings-btn');
+            const settingsPanel = document.getElementById('settings-panel');
+            const resultsPerPageInput = document.getElementById('results-per-page');
+            const themeSelect = document.getElementById('theme-select');
+            const autoCopySelect = document.getElementById('auto-copy');
+            const saveSettingsBtn = document.getElementById('save-settings-btn');
+            const notification = document.getElementById('notification');
+            const notificationClose = document.getElementById('notification-close');
+            const notificationMessage = document.getElementById('notification-message');
+            const filterSection = document.getElementById('filter-section');
+            const filterInput = document.getElementById('filter-input');
+            const filterBtn = document.getElementById('filter-btn');
+            const resetFilterBtn = document.getElementById('reset-filter-btn');
+            const sortSelect = document.getElementById('sort-select');
+            const sortBtn = document.getElementById('sort-btn');
+            const tag = document.getElementById('tag');
 
             // State
             let currentDomain = '';
             let currentPage = 1;
             let totalPages = 1;
             let currentResults = [];
+            let allResults = [];
+            let resultsPerPage = 100;
+            let fetchController = null;
+            let settings = {
+                resultsPerPage: 100,
+                theme: 'default',
+                autoCopy: false
+            };
+
+            // Initialize
+            loadSettings();
+            applyTheme(settings.theme);
 
             // Event Listeners
             searchBtn.addEventListener('click', fetchUrls);
@@ -338,48 +968,102 @@
             });
             
             copyBtn.addEventListener('click', copyResults);
-            exportJsonBtn.addEventListener('click', exportJson);
-            exportCsvBtn.addEventListener('click', exportCsv);
+            exportJsonBtn.addEventListener('click', () => exportData('json'));
+            exportCsvBtn.addEventListener('click', () => exportData('csv'));
+            exportTxtBtn.addEventListener('click', () => exportData('txt'));
+            
+            firstPageBtn.addEventListener('click', goToFirstPage);
             prevPageBtn.addEventListener('click', goToPrevPage);
             nextPageBtn.addEventListener('click', goToNextPage);
+            lastPageBtn.addEventListener('click', goToLastPage);
+            
+            cancelFetchBtn.addEventListener('click', cancelFetch);
+            settingsBtn.addEventListener('click', toggleSettings);
+            saveSettingsBtn.addEventListener('click', saveSettings);
+            notificationClose.addEventListener('click', hideNotification);
+            
+            filterBtn.addEventListener('click', applyFilter);
+            resetFilterBtn.addEventListener('click', resetFilter);
+            sortBtn.addEventListener('click', applySort);
+            
+            // Add click event to tag for fun
+            tag.addEventListener('click', function() {
+                showNotification('Ninja skills activated!', 'success');
+            });
 
             // Functions
             async function fetchUrls() {
                 const domain = domainInput.value.trim();
                 
                 if (!domain) {
-                    showEmptyState();
+                    showNotification('Please enter a domain', 'error');
                     return;
                 }
 
                 currentDomain = domain;
                 currentPage = 1;
+                fetchController = new AbortController();
                 
                 try {
                     showWaitingModal();
+                    updateStatus('Connecting to c&c ...', 10);
+                    
+                    // Simulate progress for demo (in real app, you'd update progress based on actual fetch progress)
+                    simulateProgress();
+                    
                     const urls = await getUrlsFromOtx(domain, currentPage);
                     hideWaitingModal();
                     
                     if (urls.length === 0) {
+                        showNotification('No results found for this domain', 'warning');
                         showEmptyState();
                         return;
                     }
                     
-                    currentResults = urls;
-                    renderResults(urls);
+                    allResults = urls;
+                    currentResults = paginateResults(urls, currentPage);
+                    
+                    renderResults(currentResults);
                     updatePagination();
                     resultsSection.style.display = 'block';
+                    filterSection.style.display = 'block';
                     emptyState.style.display = 'none';
+                    
+                    if (settings.autoCopy) {
+                        copyResults();
+                    }
+                    
+                    showNotification(`Found ${urls.length} URLs`, 'success');
                 } catch (error) {
                     console.error('Extraction failed:', error);
                     hideWaitingModal();
+                    
+                    if (error.name === 'AbortError') {
+                        showNotification('Operation cancelled', 'warning');
+                    } else {
+                        showNotification(`Extraction failed: ${error.message}`, 'error');
+                    }
+                    
                     showEmptyState();
                 }
+            }
+
+            function simulateProgress() {
+                let progress = 10;
+                const interval = setInterval(() => {
+                    if (progress < 90) {
+                        progress += Math.random() * 10;
+                        updateProgress(progress);
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 300);
             }
 
             function showWaitingModal() {
                 waitingModal.style.display = 'flex';
                 searchBtn.disabled = true;
+                updateProgress(0);
             }
 
             function hideWaitingModal() {
@@ -387,32 +1071,84 @@
                 searchBtn.disabled = false;
             }
 
+            function updateStatus(message, progress) {
+                statusMessage.textContent = message;
+                updateProgress(progress);
+            }
+
+            function updateProgress(percent) {
+                progressBar.style.width = `${percent}%`;
+            }
+
+            function cancelFetch() {
+                if (fetchController) {
+                    fetchController.abort();
+                    hideWaitingModal();
+                }
+            }
+
             async function getUrlsFromOtx(domain, page = 1) {
-                const apiUrl = `https://otx.alienvault.com/api/v1/indicators/domain/${domain}/url_list?limit=300&page=${page}`;
+                const apiUrl = `https://otx.alienvault.com/api/v1/indicators/domain/${domain}/url_list?limit=${resultsPerPage}&page=${page}`;
                 
                 try {
-                    const response = await fetch(apiUrl);
+                    const response = await fetch(apiUrl, {
+                        signal: fetchController?.signal
+                    });
                     
                     if (!response.ok) {
-                        throw new Error(`API request failed with status ${response.status}`);
+                        throw new Error(`C&C request failed with status ${response.status}`);
                     }
                     
                     const data = await response.json();
                     
+                    if (!data.url_list || data.url_list.length === 0) {
+                        return [];
+                    }
+                    
+                    // Calculate total pages based on count and results per page
+                    const totalCount = data.full_size;
+                    totalPages = Math.ceil(totalCount / resultsPerPage);
+                    
                     return data.url_list.map(item => ({
                         url: item.url,
                         date: item.date || 'Unknown',
+                        hostname: extractHostname(item.url),
+                        path: extractPath(item.url)
                     }));
                 } catch (error) {
                     throw new Error(`Failed to fetch from OTX: ${error.message}`);
                 }
             }
 
+            function extractHostname(url) {
+                try {
+                    const parsed = new URL(url);
+                    return parsed.hostname;
+                } catch {
+                    return '';
+                }
+            }
+
+            function extractPath(url) {
+                try {
+                    const parsed = new URL(url);
+                    return parsed.pathname + parsed.search;
+                } catch {
+                    return '';
+                }
+            }
+
+            function paginateResults(results, page) {
+                const start = (page - 1) * resultsPerPage;
+                const end = start + resultsPerPage;
+                return results.slice(start, end);
+            }
+
             function renderResults(urls) {
                 resultsContainer.innerHTML = '';
                 
                 if (urls.length === 0) {
-                    resultsContainer.innerHTML = '<div class="empty-state">No URLs found</div>';
+                    resultsContainer.innerHTML = '<div class="empty-state">No URLs match your filter</div>';
                     return;
                 }
                 
@@ -423,15 +1159,42 @@
                     resultItem.innerHTML = `
                         <div class="result-url">${item.url}</div>
                         <div class="result-meta">
-                            <span>#${index + 1}</span>
+                            <span>#${index + 1 + ((currentPage - 1) * resultsPerPage)}</span>
                             <span>Detected: ${formatDate(item.date)}</span>
+                            <span>Host: ${item.hostname}</span>
+                        </div>
+                        <div class="result-actions">
+                            <button class="result-action-btn" data-url="${encodeURIComponent(item.url)}">Copy</button>
+                            <button class="result-action-btn" data-url="${encodeURIComponent(item.url)}">Visit</button>
+                            <button class="result-action-btn" data-url="${encodeURIComponent(item.url)}">Analyze</button>
                         </div>
                     `;
                     
                     resultsContainer.appendChild(resultItem);
                 });
                 
-                resultsCount.textContent = `${urls.length} target${urls.length !== 1 ? 's' : ''} acquired`;
+                // Add event listeners to action buttons
+                document.querySelectorAll('.result-action-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const url = decodeURIComponent(this.getAttribute('data-url'));
+                        const action = this.textContent.toLowerCase();
+                        
+                        switch(action) {
+                            case 'copy':
+                                navigator.clipboard.writeText(url);
+                                showNotification('URL copied to clipboard', 'success');
+                                break;
+                            case 'visit':
+                                window.open(url, '_blank');
+                                break;
+                            case 'analyze':
+                                window.open(`https://www.virustotal.com/gui/domain/${extractHostname(url)}`, '_blank');
+                                break;
+                        }
+                    });
+                });
+                
+                resultsCount.textContent = `${allResults.length} target${allResults.length !== 1 ? 's' : ''} acquired`;
             }
 
             function formatDate(dateString) {
@@ -439,7 +1202,13 @@
                 
                 try {
                     const date = new Date(dateString);
-                    return date.toLocaleDateString();
+                    return date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
                 } catch {
                     return dateString;
                 }
@@ -447,6 +1216,7 @@
 
             function showEmptyState() {
                 resultsSection.style.display = 'none';
+                filterSection.style.display = 'none';
                 emptyState.style.display = 'block';
                 pagination.style.display = 'none';
             }
@@ -456,10 +1226,19 @@
                     pagination.style.display = 'flex';
                     pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
                     
+                    firstPageBtn.disabled = currentPage === 1;
                     prevPageBtn.disabled = currentPage === 1;
                     nextPageBtn.disabled = currentPage === totalPages;
+                    lastPageBtn.disabled = currentPage === totalPages;
                 } else {
                     pagination.style.display = 'none';
+                }
+            }
+
+            async function goToFirstPage() {
+                if (currentPage > 1) {
+                    currentPage = 1;
+                    await loadPage(currentPage);
                 }
             }
 
@@ -477,51 +1256,79 @@
                 }
             }
 
+            async function goToLastPage() {
+                if (currentPage < totalPages) {
+                    currentPage = totalPages;
+                    await loadPage(currentPage);
+                }
+            }
+
             async function loadPage(page) {
                 try {
                     showWaitingModal();
                     const urls = await getUrlsFromOtx(currentDomain, page);
                     hideWaitingModal();
+                    
                     currentResults = urls;
                     renderResults(urls);
                     updatePagination();
+                    resultsContainer.scrollTo(0, 0);
                 } catch (error) {
                     console.error('Error loading page:', error);
                     hideWaitingModal();
+                    showNotification(`Error loading page: ${error.message}`, 'error');
                 }
             }
 
             function copyResults() {
-                const urls = currentResults.map(item => item.url).join('\n');
+                const urls = allResults.map(item => item.url).join('\n');
                 
                 navigator.clipboard.writeText(urls)
                     .then(() => {
-                        // Silent operation - no feedback
+                        showNotification('All URLs copied to clipboard', 'success');
                     })
                     .catch(err => {
                         console.error('Failed to copy:', err);
+                        showNotification('Failed to copy URLs', 'error');
                     });
             }
 
-            function exportJson() {
-                const data = {
-                    domain: currentDomain,
-                    timestamp: new Date().toISOString(),
-                    urls: currentResults
-                };
+            function exportData(format) {
+                let data, mimeType, extension;
                 
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                downloadBlob(blob, `shadowfetch-${currentDomain}.json`);
-            }
-
-            function exportCsv() {
-                let csv = 'URL,Date\n';
-                currentResults.forEach(item => {
-                    csv += `"${item.url}","${item.date}"\n`;
-                });
+                switch(format) {
+                    case 'json':
+                        data = {
+                            domain: currentDomain,
+                            timestamp: new Date().toISOString(),
+                            urlCount: allResults.length,
+                            urls: allResults
+                        };
+                        data = JSON.stringify(data, null, 2);
+                        mimeType = 'application/json';
+                        extension = 'json';
+                        break;
+                        
+                    case 'csv':
+                        let csv = 'URL,Date,Hostname,Path\n';
+                        allResults.forEach(item => {
+                            csv += `"${item.url.replace(/"/g, '""')}","${item.date}","${item.hostname}","${item.path}"\n`;
+                        });
+                        data = csv;
+                        mimeType = 'text/csv';
+                        extension = 'csv';
+                        break;
+                        
+                    case 'txt':
+                        data = allResults.map(item => item.url).join('\n');
+                        mimeType = 'text/plain';
+                        extension = 'txt';
+                        break;
+                }
                 
-                const blob = new Blob([csv], { type: 'text/csv' });
-                downloadBlob(blob, `shadowfetch-${currentDomain}.csv`);
+                const blob = new Blob([data], { type: mimeType });
+                downloadBlob(blob, `shadowfetch-${currentDomain}-${new Date().toISOString().slice(0, 10)}.${extension}`);
+                showNotification(`Exported as ${format.toUpperCase()}`, 'success');
             }
 
             function downloadBlob(blob, filename) {
@@ -535,6 +1342,129 @@
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
                 }, 100);
+            }
+
+            function toggleSettings() {
+                settingsPanel.classList.toggle('active');
+            }
+
+            function loadSettings() {
+                const savedSettings = localStorage.getItem('shadowFetchSettings');
+                if (savedSettings) {
+                    settings = JSON.parse(savedSettings);
+                    resultsPerPageInput.value = settings.resultsPerPage;
+                    themeSelect.value = settings.theme;
+                    autoCopySelect.value = settings.autoCopy;
+                    resultsPerPage = settings.resultsPerPage;
+                }
+            }
+
+            function saveSettings() {
+                settings.resultsPerPage = parseInt(resultsPerPageInput.value);
+                settings.theme = themeSelect.value;
+                settings.autoCopy = autoCopySelect.value === 'true';
+                resultsPerPage = settings.resultsPerPage;
+                
+                localStorage.setItem('shadowFetchSettings', JSON.stringify(settings));
+                applyTheme(settings.theme);
+                settingsPanel.classList.remove('active');
+                showNotification('Settings saved', 'success');
+            }
+
+            function applyTheme(theme) {
+                const root = document.documentElement;
+                
+                switch(theme) {
+                    case 'red':
+                        root.style.setProperty('--ninja-accent', '#f44336');
+                        root.style.setProperty('--ninja-accent-dark', '#d32f2f');
+                        break;
+                    case 'blue':
+                        root.style.setProperty('--ninja-accent', '#2196F3');
+                        root.style.setProperty('--ninja-accent-dark', '#1976D2');
+                        break;
+                    case 'purple':
+                        root.style.setProperty('--ninja-accent', '#9C27B0');
+                        root.style.setProperty('--ninja-accent-dark', '#7B1FA2');
+                        break;
+                    default: // green
+                        root.style.setProperty('--ninja-accent', '#4CAF50');
+                        root.style.setProperty('--ninja-accent-dark', '#3e8e41');
+                }
+            }
+
+            function showNotification(message, type) {
+                notification.className = `notification ${type} show`;
+                notificationMessage.textContent = message;
+                
+                setTimeout(() => {
+                    hideNotification();
+                }, 5000);
+            }
+
+            function hideNotification() {
+                notification.classList.remove('show');
+            }
+
+            function applyFilter() {
+                const filterValue = filterInput.value.trim();
+                
+                if (!filterValue) {
+                    showNotification('Please enter a filter expression', 'warning');
+                    return;
+                }
+                
+                try {
+                    const regex = new RegExp(filterValue, 'i');
+                    const filtered = allResults.filter(item => regex.test(item.url));
+                    
+                    if (filtered.length === 0) {
+                        showNotification('No URLs match your filter', 'warning');
+                    } else {
+                        showNotification(`Filter applied: ${filtered.length} results match`, 'success');
+                    }
+                    
+                    currentResults = paginateResults(filtered, 1);
+                    currentPage = 1;
+                    renderResults(currentResults);
+                    updatePagination();
+                } catch (error) {
+                    showNotification('Invalid regular expression', 'error');
+                }
+            }
+
+            function resetFilter() {
+                filterInput.value = '';
+                currentResults = paginateResults(allResults, 1);
+                currentPage = 1;
+                renderResults(currentResults);
+                updatePagination();
+                showNotification('Filter reset', 'info');
+            }
+
+            function applySort() {
+                const sortValue = sortSelect.value;
+                let sorted = [...allResults];
+                
+                switch(sortValue) {
+                    case 'date-desc':
+                        sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
+                        break;
+                    case 'date-asc':
+                        sorted.sort((a, b) => new Date(a.date) - new Date(b.date));
+                        break;
+                    case 'url-asc':
+                        sorted.sort((a, b) => a.url.localeCompare(b.url));
+                        break;
+                    case 'url-desc':
+                        sorted.sort((a, b) => b.url.localeCompare(a.url));
+                        break;
+                }
+                
+                allResults = sorted;
+                currentResults = paginateResults(sorted, currentPage);
+                renderResults(currentResults);
+                showNotification(`Sorted by: ${sortSelect.options[sortSelect.selectedIndex].text}`, 'info');
             }
         });
     </script>
